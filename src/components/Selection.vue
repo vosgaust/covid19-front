@@ -1,0 +1,107 @@
+<template>
+  <div id="selection" class="select">
+    <select v-model="selected" name="slct" id="slct" @change="stateChanged">
+      <option
+        v-for="option in options"
+        v-bind:key="option.code"
+        v-bind:value="option.code"
+      >
+        {{ option.name }}
+      </option>
+    </select>
+  </div>
+</template>
+
+<script>
+import historic from "@/middleware/historic";
+import states from "@/constants/states";
+
+export default {
+  name: "selection",
+  async mounted() {
+    this.getSelectOptions();
+    this.stateChanged();
+  },
+  data() {
+    return {
+      options: [],
+      selected: "AN"
+    };
+  },
+  methods: {
+    getSelectOptions: function() {
+      Object.keys(states.spain).forEach(code => {
+        this.options.push({ code, name: states.spain[code] });
+      });
+    },
+    stateChanged: async function() {
+      const result = await historic.cumulative(this.selected);
+      this.$store.commit("addGraph", result);
+    }
+  }
+};
+</script>
+<style lang="scss" scoped>
+body {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background: #f39c12;
+}
+h1 {
+  margin: 0 0 0.25em;
+}
+/* Reset Select */
+select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  -ms-appearance: none;
+  appearance: none;
+  outline: 0;
+  box-shadow: none;
+  border: 0 !important;
+  background: #2c3e50;
+  background-image: none;
+}
+/* Remove IE arrow */
+select::-ms-expand {
+  display: none;
+}
+/* Custom Select */
+.select {
+  position: relative;
+  display: flex;
+  width: 20em;
+  height: 3em;
+  line-height: 3;
+  background: #2c3e50;
+  overflow: hidden;
+  border-radius: 0.25em;
+}
+select {
+  flex: 1;
+  padding: 0 0.5em;
+  color: #fff;
+  cursor: pointer;
+}
+/* Arrow */
+.select::after {
+  content: "\25BC";
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: 0 1em;
+  background: #34495e;
+  cursor: pointer;
+  pointer-events: none;
+  -webkit-transition: 0.25s all ease;
+  -o-transition: 0.25s all ease;
+  transition: 0.25s all ease;
+}
+/* Transition */
+.select:hover::after {
+  color: #f39c12;
+}
+</style>
